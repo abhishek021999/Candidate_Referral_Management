@@ -2,34 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Candidate = require('../models/Candidate');
 const auth = require('../middleware/auth');
-const multer = require('multer');
-const path = require('path');
-
-// Multer config for PDF only
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '../uploads');
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  },
-});
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'application/pdf') {
-    cb(null, true);
-  } else {
-    cb(new Error('Only PDF files are allowed'), false);
-  }
-};
-const upload = multer({ storage, fileFilter });
+// Removed multer and path imports
 
 // @route   POST /candidates
 // @desc    Add a new candidate
 // @access  User
-router.post('/', auth('user'), upload.single('resume'), async (req, res) => {
+router.post('/', auth('user'), async (req, res) => {
   try {
-    const { name, email, phone, jobTitle } = req.body;
+    const { name, email, phone, jobTitle, resumeUrl } = req.body;
     // Validation
     if (!name || !email || !phone || !jobTitle) {
       return res.status(400).json({ msg: 'All fields except resume are required' });
@@ -42,16 +22,13 @@ router.post('/', auth('user'), upload.single('resume'), async (req, res) => {
     if (!phoneRegex.test(phone)) {
       return res.status(400).json({ msg: 'Invalid phone number' });
     }
-    let resumeUrl = '';
-    if (req.file) {
-      resumeUrl = `/uploads/${req.file.filename}`;
-    }
+    // Use resumeUrl directly from request body
     const candidate = new Candidate({
       name,
       email,
       phone,
       jobTitle,
-      resumeUrl,
+      resumeUrl: resumeUrl || '',
       referredBy: req.user.id,
     });
     await candidate.save();

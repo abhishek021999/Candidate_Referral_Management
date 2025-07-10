@@ -7,6 +7,7 @@ function UserDashboard() {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [resumeStatus, setResumeStatus] = useState({});
 
   const fetchCandidates = async () => {
     setLoading(true);
@@ -17,6 +18,19 @@ function UserDashboard() {
       if (status) query += `${query ? "&" : ""}status=${encodeURIComponent(status)}`;
       const res = await apiRequest(`/candidates${query ? `?${query}` : ""}`);
       setCandidates(res);
+      // Check resume URLs
+      const statusObj = {};
+      await Promise.all(res.map(async (candidate) => {
+        if (candidate.resumeUrl) {
+          try {
+            const response = await fetch(candidate.resumeUrl, { method: 'HEAD' });
+            statusObj[candidate._id] = response.ok;
+          } catch {
+            statusObj[candidate._id] = false;
+          }
+        }
+      }));
+      setResumeStatus(statusObj);
     } catch (err) {
       setError(err.msg || "Failed to fetch candidates");
     }
@@ -65,22 +79,33 @@ function UserDashboard() {
         <div>No candidates found.</div>
       ) : (
         <div className="row">
-          {candidates.map(candidate => (
-            <div className="col-md-4 mb-4 d-flex justify-content-center" key={candidate._id}>
-              <div className="card h-100 w-100 shadow-sm" style={{ width: 500 }}>
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title">{candidate.name}</h5>
-                  <p className="card-text mb-1"><strong>Job Title:</strong> {candidate.jobTitle}</p>
-                  <p className="card-text mb-1"><strong>Status:</strong> <span className={`badge bg-${candidate.status === 'Pending' ? 'warning' : candidate.status === 'Reviewed' ? 'info' : 'success'}`}>{candidate.status}</span></p>
-                  <div className="mt-auto">
+          {candidates.map(candidate => {
+            console.log('Candidate:', candidate.name, 'Resume URL:', candidate.resumeUrl, 'Status:', resumeStatus[candidate._id]);
+            return (
+              <div className="col-md-4 mb-4 d-flex justify-content-center" key={candidate._id}>
+                <div className="card h-100 w-100 shadow-sm" style={{ width: 500 }}>
+                  <div className="card-body d-flex flex-column">
+                    <h5 className="card-title">{candidate.name}</h5>
+                    <p className="card-text mb-1"><strong>Job Title:</strong> {candidate.jobTitle}</p>
+                    <p className="card-text mb-1"><strong>Status:</strong> <span className={`badge bg-${candidate.status === 'Pending' ? 'warning' : candidate.status === 'Reviewed' ? 'info' : 'success'}`}>{candidate.status}</span></p>
                     {candidate.resumeUrl && (
-                      <a href={`http://localhost:5000${candidate.resumeUrl}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm mt-2 w-100">View Resume</a>
+                      <p className="card-text mb-1">
+                        <strong>Resume Link:</strong> <a href={candidate.resumeUrl} target="_blank" rel="noopener noreferrer">{candidate.resumeUrl}</a>
+                      </p>
                     )}
+                    <div className="mt-auto">
+                      {candidate.resumeUrl && resumeStatus[candidate._id] === true && (
+                        <a href={candidate.resumeUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm mt-2 w-100">View Resume</a>
+                      )}
+                      {candidate.resumeUrl && resumeStatus[candidate._id] === false && (
+                        <div className="alert alert-warning mt-2 p-2">Resume URL not accessible</div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

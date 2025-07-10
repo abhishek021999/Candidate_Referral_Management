@@ -11,6 +11,7 @@ function AdminDashboard() {
   const [deleting, setDeleting] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [resumeStatus, setResumeStatus] = useState({});
 
   const fetchCandidates = async () => {
     setLoading(true);
@@ -21,6 +22,19 @@ function AdminDashboard() {
       if (status) query += `${query ? "&" : ""}status=${encodeURIComponent(status)}`;
       const res = await apiRequest(`/candidates${query ? `?${query}` : ""}`);
       setCandidates(res);
+      // Check resume URLs
+      const statusObj = {};
+      await Promise.all(res.map(async (candidate) => {
+        if (candidate.resumeUrl) {
+          try {
+            const response = await fetch(candidate.resumeUrl, { method: 'HEAD' });
+            statusObj[candidate._id] = response.ok;
+          } catch {
+            statusObj[candidate._id] = false;
+          }
+        }
+      }));
+      setResumeStatus(statusObj);
     } catch (err) {
       setError(err.msg || "Failed to fetch candidates");
     }
@@ -96,42 +110,53 @@ function AdminDashboard() {
         <div>No candidates found.</div>
       ) : (
         <div className="row">
-          {candidates.map(candidate => (
-            <div className="col-md-4 mb-4 d-flex justify-content-center" key={candidate._id}>
-              <div className="card shadow-sm" style={{ width: 400 }}>
-                <div className="card-body d-flex flex-column justify-content-between">
-                  <div>
-                    <h5 className="card-title">{candidate.name}</h5>
-                    <p className="card-text mb-1"><strong>Job Title:</strong> {candidate.jobTitle}</p>
-                    <p className="card-text mb-1"><strong>Status:</strong> <span className={`badge bg-${candidate.status === 'Pending' ? 'warning' : candidate.status === 'Reviewed' ? 'info' : 'success'}`}>{candidate.status}</span></p>
-                    <p className="card-text mb-1"><strong>Referred By:</strong> {candidate.referredBy?.name || candidate.referredBy?.email || 'N/A'}</p>
-                  </div>
-                  <div>
-                    {candidate.resumeUrl && (
-                      <a href={`https://candidate-referral-management.onrender.com${candidate.resumeUrl}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm mt-2 w-100">View Resume</a>
-                    )}
-                    <select
-                      className="form-select mb-2 mt-2"
-                      value={candidate.status}
-                      disabled={statusUpdating === candidate._id}
-                      onChange={e => handleStatusChange(candidate._id, e.target.value)}
-                    >
-                      <option value="Pending">Pending</option>
-                      <option value="Reviewed">Reviewed</option>
-                      <option value="Hired">Hired</option>
-                    </select>
-                    <button
-                      className="btn btn-danger btn-sm w-100"
-                      disabled={deleting === candidate._id}
-                      onClick={() => handleDelete(candidate._id)}
-                    >
-                      {deleting === candidate._id ? "Deleting..." : "Delete"}
-                    </button>
+          {candidates.map(candidate => {
+            console.log('Candidate:', candidate.name, 'Resume URL:', candidate.resumeUrl, 'Status:', resumeStatus[candidate._id]);
+            return (
+              <div className="col-md-4 mb-4 d-flex justify-content-center" key={candidate._id}>
+                <div className="card shadow-sm" style={{ width: 400 }}>
+                  <div className="card-body d-flex flex-column justify-content-between">
+                    <div>
+                      <h5 className="card-title">{candidate.name}</h5>
+                      <p className="card-text mb-1"><strong>Job Title:</strong> {candidate.jobTitle}</p>
+                      <p className="card-text mb-1"><strong>Status:</strong> <span className={`badge bg-${candidate.status === 'Pending' ? 'warning' : candidate.status === 'Reviewed' ? 'info' : 'success'}`}>{candidate.status}</span></p>
+                      <p className="card-text mb-1"><strong>Referred By:</strong> {candidate.referredBy?.name || candidate.referredBy?.email || 'N/A'}</p>
+                      {candidate.resumeUrl && (
+                        <p className="card-text mb-1">
+                          <strong>Resume Link:</strong> <a href={candidate.resumeUrl} target="_blank" rel="noopener noreferrer">{candidate.resumeUrl}</a>
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      {candidate.resumeUrl && resumeStatus[candidate._id] === true && (
+                        <a href={candidate.resumeUrl} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm mt-2 w-100">View Resume</a>
+                      )}
+                      {candidate.resumeUrl && resumeStatus[candidate._id] === false && (
+                        <div className="alert alert-warning mt-2 p-2">Resume URL not accessible</div>
+                      )}
+                      <select
+                        className="form-select mb-2 mt-2"
+                        value={candidate.status}
+                        disabled={statusUpdating === candidate._id}
+                        onChange={e => handleStatusChange(candidate._id, e.target.value)}
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Reviewed">Reviewed</option>
+                        <option value="Hired">Hired</option>
+                      </select>
+                      <button
+                        className="btn btn-danger btn-sm w-100"
+                        disabled={deleting === candidate._id}
+                        onClick={() => handleDelete(candidate._id)}
+                      >
+                        {deleting === candidate._id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

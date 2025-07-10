@@ -9,7 +9,7 @@ function UserReferralForm() {
     email: "",
     phone: "",
     jobTitle: "",
-    resume: null,
+    resumeUrl: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -18,12 +18,8 @@ function UserReferralForm() {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === "resume") {
-      setForm({ ...form, resume: files[0] });
-    } else {
-      setForm({ ...form, [name]: value });
-    }
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
   };
 
   const validate = () => {
@@ -32,7 +28,7 @@ function UserReferralForm() {
     if (!emailRegex.test(form.email)) return "Invalid email format.";
     const phoneRegex = /^[0-9]{10,15}$/;
     if (!phoneRegex.test(form.phone)) return "Invalid phone number.";
-    if (form.resume && form.resume.type !== "application/pdf") return "Resume must be a PDF file.";
+    if (form.resumeUrl && !/^https?:\/\//.test(form.resumeUrl)) return "Resume URL must be a valid URL.";
     return null;
   };
 
@@ -47,15 +43,15 @@ function UserReferralForm() {
     }
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("email", form.email);
-      formData.append("phone", form.phone);
-      formData.append("jobTitle", form.jobTitle);
-      if (form.resume) formData.append("resume", form.resume);
-      await apiRequest("/candidates", "POST", formData, true);
+      await apiRequest("/candidates", "POST", {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        jobTitle: form.jobTitle,
+        resumeUrl: form.resumeUrl,
+      });
       toast.success("Candidate referred successfully!");
-      setForm({ name: "", email: "", phone: "", jobTitle: "", resume: null });
+      setForm({ name: "", email: "", phone: "", jobTitle: "", resumeUrl: "" });
       setTimeout(() => navigate("/user/dashboard"), 1200);
     } catch (err) {
       toast.error(err.msg || "Failed to refer candidate");
@@ -67,7 +63,7 @@ function UserReferralForm() {
     <div className="container-fluid min-vh-100 mt-5 d-flex justify-content-center align-items-center" >
       <div className="card shadow p-4" style={{ maxWidth: 500, width: '100%', borderRadius: 16 }}>
         <h2 className="mb-4 text-center fw-bold">Refer a Candidate</h2>
-        <form onSubmit={handleSubmit} encType="multipart/form-data">
+        <form onSubmit={handleSubmit}>
           <div className="mb-3">
             <label className="form-label text-start w-100">Candidate Name</label>
             <input
@@ -113,13 +109,14 @@ function UserReferralForm() {
             />
           </div>
           <div className="mb-3">
-            <label className="form-label text-start w-100">Resume (PDF, optional)</label>
+            <label className="form-label text-start w-100">Resume URL (optional)</label>
             <input
-              type="file"
+              type="url"
               className="form-control"
-              name="resume"
-              accept="application/pdf"
+              name="resumeUrl"
+              value={form.resumeUrl}
               onChange={handleChange}
+              placeholder="https://example.com/resume.pdf"
             />
           </div>
           {error && <div className="alert alert-danger">{error}</div>}

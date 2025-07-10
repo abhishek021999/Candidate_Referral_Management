@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const candidateRoutes = require('./routes/candidate');
+const uploadRoutes = require('./routes/upload');
 const path = require('path');
 
 // Load environment variables
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
 // TODO: Import and use routes here
 app.use('/api/auth', authRoutes);
 app.use('/api/candidates', candidateRoutes);
+app.use('/api/upload', uploadRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
