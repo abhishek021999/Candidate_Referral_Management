@@ -114,7 +114,7 @@ function AdminDashboard() {
             console.log('Candidate:', candidate.name, 'Resume URL:', candidate.resumeUrl, 'Status:', resumeStatus[candidate._id]);
             return (
               <div className="col-md-4 mb-4 d-flex justify-content-center" key={candidate._id}>
-                <div className="card shadow-sm" style={{ width: 400 }}>
+                <div className="card" style={{ width: '300px' }}>
                   <div className="card-body d-flex flex-column justify-content-between">
                     <div>
                       <h5 className="card-title">{candidate.name}</h5>
