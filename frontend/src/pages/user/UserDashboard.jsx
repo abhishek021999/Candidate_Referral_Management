@@ -43,9 +43,9 @@ function UserDashboard() {
   }, [search, status]);
 
   return (
-    <div className="container-fluid min-vh-100 mt-5">
+    <div className="container-fluid min-vh-100 mt-5 ">
       <h2 className="mb-4">Referred Candidates</h2>
-      <div className="row mb-3">
+      <div className="row mb-3 border-2">
         <div className="col-md-6 mb-2">
           <input
             type="text"
@@ -83,8 +83,8 @@ function UserDashboard() {
             console.log('Candidate:', candidate.name, 'Resume URL:', candidate.resumeUrl, 'Status:', resumeStatus[candidate._id]);
             return (
               <div className="col-md-4 mb-4 d-flex justify-content-center" key={candidate._id}>
-                <div className="card h-100 w-100 shadow-sm" style={{ width: '300px' }}>
-                  <div className="card-body d-flex flex-column">
+                <div className="card h-100 w-100 shadow-sm" style={{ width: '480px', minHeight: '350px', margin: '0 auto' }}>
+                  <div className="card-body d-flex flex-column" style={{ textAlign: 'left' }}>
                     <h5 className="card-title">{candidate.name}</h5>
                     <p className="card-text mb-1"><strong>Job Title:</strong> {candidate.jobTitle}</p>
                     <p className="card-text mb-1"><strong>Status:</strong> <span className={`badge bg-${candidate.status === 'Pending' ? 'warning' : candidate.status === 'Reviewed' ? 'info' : 'success'}`}>{candidate.status}</span></p>
