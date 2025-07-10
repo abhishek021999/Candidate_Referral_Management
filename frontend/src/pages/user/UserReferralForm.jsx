@@ -64,7 +64,7 @@ function UserReferralForm() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 mt-5 d-flex justify-content-center align-items-center" style={{ background: '#f8f9fa' }}>
+    <div className="container-fluid min-vh-100 mt-5 d-flex justify-content-center align-items-center" >
       <div className="card shadow p-4" style={{ maxWidth: 500, width: '100%', borderRadius: 16 }}>
         <h2 className="mb-4 text-center fw-bold">Refer a Candidate</h2>
         <form onSubmit={handleSubmit} encType="multipart/form-data">

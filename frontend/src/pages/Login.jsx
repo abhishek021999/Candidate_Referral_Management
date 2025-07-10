@@ -29,8 +29,8 @@ function Login() {
   };
 
   return (
-    <div className="container-fluid min-vh-100 mt-5 d-flex justify-content-center align-items-center" style={{ background: '#f8f9fa' }}>
-      <div className="card shadow p-4" style={{ maxWidth: 600, width: '100%', borderRadius: 16 }}>
+    <div className="container-fluid    mt-5 d-flex justify-content-center align-items-center">
+      <div className="card shadow p-4  "  style={{ maxWidth: 600, width: '100%', borderRadius: 16 }}>
         <h2 className="mb-4 text-center fw-bold">Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
