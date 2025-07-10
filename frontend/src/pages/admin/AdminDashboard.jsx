@@ -108,7 +108,7 @@ function AdminDashboard() {
                   </div>
                   <div>
                     {candidate.resumeUrl && (
-                      <a href={`http://localhost:5000${candidate.resumeUrl}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm mt-2 w-100">View Resume</a>
+                      <a href={`https://candidate-referral-management.onrender.com${candidate.resumeUrl}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm mt-2 w-100">View Resume</a>
                     )}
                     <select
                       className="form-select mb-2 mt-2"

@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://candidate-referral-management.onrender.com/api'; 
 
 export const getToken = () => localStorage.getItem('token');
 
